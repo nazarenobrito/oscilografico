@@ -3,25 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Monitor Cardíaco PPG</title>
+  <title>Pé de Chumbo • Monitor Fisiológico PPG</title>
   <style>
     :root {
-      --bg: #0b0f17;
-      --card: #131a26;
-      --border: #222d40;
-      --text: #f1f5f9;
+      --bg: #090d14;
+      --surface: #111827;
+      --surface-2: #1a2333;
+      --border: #263247;
+      --text: #f8fafc;
       --muted: #94a3b8;
-      --accent: #ef4444;
-      --accent-glow: rgba(239, 68, 68, 0.35);
-      --ok: #10b981;
-      --warn: #f59e0b;
+      --lead: #64748b;
+      --gold: #f59e0b;
+      --gold-soft: rgba(245, 158, 11, 0.14);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.35);
+      --green: #10b981;
+      --green-soft: rgba(16, 185, 129, 0.14);
+      --blue: #38bdf8;
+      --blue-soft: rgba(56, 189, 248, 0.14);
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -31,105 +36,361 @@
       color: var(--text);
       min-height: 100dvh;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 12px;
     }
 
     .app {
       width: 100%;
-      max-width: 420px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 24px 20px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 24px;
     }
 
-    header {
+    /* Cabeçalho da Equipe */
+    .topbar {
+      background: linear-gradient(135deg, #131c2e 0%, #0f172a 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      gap: 10px;
     }
 
-    header h1 {
-      font-size: 1.1rem;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--gold-soft);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--gold);
+      font-size: 0.95rem;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-title h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .brand-title span {
+      font-size: 0.72rem;
+      color: var(--gold);
       font-weight: 600;
-      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
     }
 
     .badge {
-      font-size: 0.75rem;
-      padding: 4px 10px;
+      font-size: 0.72rem;
+      padding: 5px 10px;
       border-radius: 999px;
       background: rgba(148, 163, 184, 0.12);
       color: var(--muted);
-      font-weight: 500;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     .badge.active {
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--ok);
+      background: var(--green-soft);
+      color: var(--green);
     }
 
-    .bpm-panel {
-      display: flex;
+    /* Navegação Principal */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 9px 6px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-btn.active {
+      background: var(--surface-2);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .tab-panel {
+      display: none;
       flex-direction: column;
+      gap: 12px;
+    }
+
+    .tab-panel.active {
+      display: flex;
+    }
+
+    /* Card Padrão */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    /* Seleção de Atleta (Modo Grupo) */
+    .athlete-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .athlete-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 0.92rem;
+      outline: none;
+    }
+
+    .athlete-input:focus {
+      border-color: var(--gold);
+    }
+
+    .btn-ghost {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 0 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .recent-athletes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+
+    .chip.selected {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: var(--gold-soft);
+    }
+
+    /* Seletor de Protocolos */
+    .modes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mode-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .mode-card.active {
+      border-color: var(--gold);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .mode-title {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mode-time {
+      font-size: 0.68rem;
+      color: var(--gold);
+      background: var(--gold-soft);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .mode-desc {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+
+    /* Explicação Contextual do Protocolo */
+    .protocol-explain {
+      margin-top: 10px;
+      background: rgba(56, 189, 248, 0.07);
+      border-left: 3px solid var(--blue);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .protocol-explain strong {
+      color: var(--blue);
+    }
+
+    /* Painel Central de Leitura */
+    .monitor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .timer-pill {
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--gold);
+    }
+
+    .bpm-hero {
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 18px 0;
-      position: relative;
+      gap: 16px;
+      padding: 10px 0;
     }
 
     .heart-wrap {
-      width: 54px;
-      height: 54px;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
-      background: rgba(239, 68, 68, 0.12);
+      background: rgba(239, 68, 68, 0.14);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 10px;
       transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.12s ease;
     }
 
     .heart-wrap.beat {
       transform: scale(1.22);
-      box-shadow: 0 0 24px var(--accent-glow);
+      box-shadow: 0 0 24px var(--red-glow);
     }
 
     .heart-icon {
       width: 28px;
       height: 28px;
-      fill: var(--accent);
+      fill: var(--red);
+    }
+
+    .bpm-readout {
+      text-align: left;
     }
 
     .bpm-value {
-      font-size: 4.2rem;
-      font-weight: 700;
-      line-height: 1;
+      font-size: 3.6rem;
+      font-weight: 800;
+      line-height: 0.95;
       font-variant-numeric: tabular-nums;
       letter-spacing: -2px;
     }
 
     .bpm-unit {
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-top: 6px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-top: 4px;
     }
 
+    /* Barra de Contato Óptico */
+    .contact-bar-wrap {
+      margin: 8px 0 12px;
+    }
+
+    .contact-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .contact-track {
+      width: 100%;
+      height: 6px;
+      background: var(--bg);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .contact-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--red);
+      transition: width 0.2s ease, background 0.2s ease;
+    }
+
+    /* Gráfico PPG */
     .wave-container {
       width: 100%;
-      height: 120px;
-      background: #090d14;
+      height: 105px;
+      background: #06090f;
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 12px;
       overflow: hidden;
-      margin: 16px 0;
+      margin-bottom: 12px;
       position: relative;
     }
 
@@ -139,121 +400,464 @@
       display: block;
     }
 
-    .metrics {
+    /* Grade de Métricas Secundárias */
+    .metrics-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
     }
 
     .metric-box {
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 10px 12px;
+      padding: 9px 8px;
       text-align: center;
     }
 
     .metric-label {
-      font-size: 0.72rem;
+      font-size: 0.66rem;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
     }
 
     .metric-val {
-      font-size: 1.05rem;
-      font-weight: 600;
-      margin-top: 4px;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-top: 3px;
       font-variant-numeric: tabular-nums;
     }
 
+    .metric-sub {
+      font-size: 0.65rem;
+      color: var(--lead);
+      margin-top: 2px;
+    }
+
     .status-box {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--muted);
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--surface-2);
       border-radius: 12px;
-      padding: 12px;
+      padding: 11px 12px;
       text-align: center;
       line-height: 1.4;
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
-    .status-box.ok { color: var(--ok); background: rgba(16, 185, 129, 0.08); }
-    .status-box.warn { color: var(--warn); background: rgba(245, 158, 11, 0.08); }
+    .status-box.ok { color: var(--green); background: var(--green-soft); }
+    .status-box.warn { color: var(--gold); background: var(--gold-soft); }
 
-    button {
+    .btn-primary {
       width: 100%;
-      padding: 15px;
+      padding: 14px;
       border: none;
       border-radius: 14px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--red);
+      color: #fff;
+      transition: transform 0.1s ease, opacity 0.2s ease;
+    }
+
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary.stop { background: #334155; }
+
+    /* Cartão de Resultado Interpretado */
+    .result-card {
+      display: none;
+      background: linear-gradient(180deg, #131c2e 0%, #111827 100%);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 18px;
+      padding: 16px;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .result-card.visible {
+      display: flex;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .result-athlete {
       font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .result-mode-tag {
+      font-size: 0.72rem;
+      background: var(--green-soft);
+      color: var(--green);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .interp-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+    }
+
+    .interp-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .interp-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .interp-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .badge-good { background: var(--green-soft); color: var(--green); }
+    .badge-warn { background: var(--gold-soft); color: var(--gold); }
+    .badge-info { background: var(--blue-soft); color: var(--blue); }
+
+    .interp-text {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .result-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
-      background: var(--accent);
-      color: #fff;
-      transition: opacity 0.2s, transform 0.1s;
     }
 
-    button:active { transform: scale(0.98); }
-    button.stop { background: #334155; }
+    .btn-action.next-athlete {
+      grid-column: span 2;
+      background: var(--gold);
+      color: #090d14;
+      border: none;
+      font-weight: 700;
+    }
+
+    /* Histórico do Grupo */
+    .history-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+    }
+
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.84rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .history-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .history-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.74rem;
+    }
+
+    .stat-pill {
+      background: var(--surface-2);
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--text);
+    }
+
+    /* Guia Didático das Métricas */
+    .guide-item {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0;
+    }
+
+    .guide-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .guide-item h3 {
+      font-size: 0.9rem;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .guide-item p {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+      margin-bottom: 4px;
+    }
+
+    .guide-ref {
+      font-size: 0.74rem;
+      color: var(--green);
+      font-weight: 600;
+    }
 
     .disclaimer {
-      margin-top: 14px;
-      font-size: 0.72rem;
-      color: #64748b;
+      font-size: 0.71rem;
+      color: var(--lead);
       text-align: center;
       line-height: 1.35;
+      padding: 0 8px;
     }
 
-    /* Elementos ocultos de captura */
     video, #procCanvas { display: none; }
   </style>
 </head>
 <body>
   <main class="app">
-    <header>
-      <h1>Monitor PPG</h1>
-      <span id="torchBadge" class="badge">Flash: desligado</span>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">PDC</div>
+        <div class="brand-title">
+          <span>Equipe de Corrida</span>
+          <h1>Pé de Chumbo • Lab PPG</h1>
+        </div>
+      </div>
+      <span id="torchBadge" class="badge">Flash: off</span>
     </header>
 
-    <section class="bpm-panel">
-      <div id="heartWrap" class="heart-wrap">
-        <svg class="heart-icon" viewBox="0 0 24 24">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-        </svg>
+    <nav class="nav-tabs">
+      <button class="nav-btn active" data-tab="measureTab">Medir Atleta</button>
+      <button class="nav-btn" data-tab="historyTab">Grupo (<span id="historyCount">0</span>)</button>
+      <button class="nav-btn" data-tab="guideTab">O que Mede?</button>
+    </nav>
+
+    <!-- ABA 1: MEDIÇÃO -->
+    <section id="measureTab" class="tab-panel active">
+      <!-- Identificação do Atleta para Uso em Grupo -->
+      <div class="card">
+        <span class="section-label">1. Identificação do Corredor (Modo Grupo)</span>
+        <div class="athlete-row">
+          <input id="athleteName" class="athlete-input" type="text" placeholder="Nome do atleta (ex.: Nazareno, Walmir...)" maxlength="35" />
+          <button id="clearAthleteBtn" class="btn-ghost" type="button">Limpar</button>
+        </div>
+        <div id="recentAthletes" class="recent-athletes"></div>
       </div>
-      <div id="bpmValue" class="bpm-value">--</div>
-      <div class="bpm-unit">BPM</div>
+
+      <!-- Escolha do Protocolo -->
+      <div class="card">
+        <span class="section-label">2. Escolha o Protocolo de Corrida</span>
+        <div class="modes-grid" id="modesGrid">
+          <button type="button" class="mode-card active" data-mode="readiness">
+            <div class="mode-title">Prontidão & VFC <span class="mode-time">30s</span></div>
+            <div class="mode-desc">BPM repouso, RMSSD e perfusão antes do treino.</div>
+          </button>
+          <button type="button" class="mode-card" data-mode="recovery">
+            <div class="mode-title">Recuperação HRR <span class="mode-time">60s</span></div>
+            <div class="mode-desc">Queda de BPM em 1 min logo após tiro ou prova.</div>
+          </button>
+          <button type="button" class="mode-card" data-mode="respiration">
+            <div class="mode-title">Respiração RPM <span class="mode-time">45s</span></div>
+            <div class="mode-desc">Respirações/min no desaquecimento pós-treino.</div>
+          </button>
+          <button type="button" class="mode-card" data-mode="free">
+            <div class="mode-title">Monitor Livre <span class="mode-time">Contínuo</span></div>
+            <div class="mode-desc">Leitura em tempo real sem limite de tempo.</div>
+          </button>
+        </div>
+
+        <div id="protocolExplain" class="protocol-explain">
+          <strong>Como funciona (Prontidão & VFC):</strong> O sensor óptico mede o intervalo em milissegundos entre cada batimento (intervalos RR). A partir deles, calcula o <strong>RMSSD</strong>, que mostra se o sistema nervoso está recuperado para treinos intensos ou se pede rodagem leve.
+        </div>
+      </div>
+
+      <!-- Painel do Sensor Óptico -->
+      <div class="card">
+        <div class="monitor-head">
+          <span class="section-label" style="margin:0;">3. Captação Óptica (Dedo na Câmera + Flash)</span>
+          <span id="timerPill" class="timer-pill">30s</span>
+        </div>
+
+        <div class="bpm-hero">
+          <div id="heartWrap" class="heart-wrap">
+            <svg class="heart-icon" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+          <div class="bpm-readout">
+            <div id="bpmValue" class="bpm-value">--</div>
+            <div class="bpm-unit">BATIMENTOS / MIN (BPM)</div>
+          </div>
+        </div>
+
+        <div class="contact-bar-wrap">
+          <div class="contact-header">
+            <span>Qualidade do contato óptico</span>
+            <span id="contactText">Aguardando dedo</span>
+          </div>
+          <div class="contact-track">
+            <div id="contactFill" class="contact-fill"></div>
+          </div>
+        </div>
+
+        <div class="wave-container">
+          <canvas id="waveCanvas"></canvas>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="metric-label">VFC (RMSSD)</div>
+            <div id="rmssdValue" class="metric-val">-- ms</div>
+            <div class="metric-sub">Recuperação</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Respiração</div>
+            <div id="rpmValue" class="metric-val">-- rpm</div>
+            <div class="metric-sub">Ciclos/min</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Perfusão (PI)</div>
+            <div id="piValue" class="metric-val">-- %</div>
+            <div class="metric-sub">Fluxo local</div>
+          </div>
+        </div>
+
+        <div id="statusBox" class="status-box">
+          Digite o nome do corredor, escolha o protocolo e toque em <strong>Iniciar Medição</strong> cobrindo suavemente a lente traseira e o flash.
+        </div>
+
+        <button id="toggleBtn" class="btn-primary" type="button">Iniciar Medição</button>
+      </div>
+
+      <!-- Resultado Explicado Pós-Medição -->
+      <div id="resultCard" class="result-card">
+        <div class="result-header">
+          <div>
+            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Laudo Esportivo • Pé de Chumbo</div>
+            <div id="resAthleteName" class="result-athlete">Atleta</div>
+          </div>
+          <span id="resModeTag" class="result-mode-tag">Prontidão</span>
+        </div>
+
+        <div id="interpretationsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+        <div class="result-actions">
+          <button id="shareWhatsappBtn" class="btn-action" type="button">Copiar p/ WhatsApp</button>
+          <button id="repeatMeasureBtn" class="btn-action" type="button">Refazer Leitura</button>
+          <button id="nextAthleteBtn" class="btn-action next-athlete" type="button">Próximo Atleta da Equipe</button>
+        </div>
+      </div>
     </section>
 
-    <div class="wave-container">
-      <canvas id="waveCanvas"></canvas>
-    </div>
-
-    <div class="metrics">
-      <div class="metric-box">
-        <div class="metric-label">Intervalo RR</div>
-        <div id="rrValue" class="metric-val">-- ms</div>
+    <!-- ABA 2: HISTÓRICO DO GRUPO -->
+    <section id="historyTab" class="tab-panel">
+      <div class="card">
+        <span class="section-label">Registros da Sessão / Equipe</span>
+        <div class="history-actions">
+          <button id="exportCsvBtn" class="btn-ghost" style="flex:1;padding:10px;" type="button">Exportar Planilha (CSV)</button>
+          <button id="shareGroupBtn" class="btn-ghost" style="flex:1;padding:10px;" type="button">Copiar Resumo Grupo</button>
+          <button id="clearHistoryBtn" class="btn-ghost" style="padding:10px;color:var(--red);" type="button">Zerar</button>
+        </div>
+        <div id="historyList" class="history-list">
+          <div style="font-size:0.82rem;color:var(--muted);text-align:center;padding:20px 0;">
+            Nenhuma medição registrada ainda nesta sessão.
+          </div>
+        </div>
       </div>
-      <div class="metric-box">
-        <div class="metric-label">Sinal Óptico</div>
-        <div id="qualityValue" class="metric-val">Aguardando</div>
+    </section>
+
+    <!-- ABA 3: GUIA DIDÁTICO DAS MEDIÇÕES -->
+    <section id="guideTab" class="tab-panel">
+      <div class="card">
+        <span class="section-label">Entenda cada medição e como usar na corrida</span>
+
+        <div class="guide-item">
+          <h3>1. Frequência Cardíaca (BPM)</h3>
+          <p><strong>O que mede:</strong> Quantas vezes o coração bate por minuto, detectado pela variação de absorção da luz verde do flash nos capilares do dedo a cada onda de sangue.</p>
+          <p><strong>Significado na corrida:</strong> Em repouso absoluto, corredores bem condicionados costumam apresentar entre 45 e 65 BPM. Um aumento repentino de 7 a 10 BPM acima da sua média matinal indica fadiga acumulada, noites mal dormidas ou início de virose.</p>
+          <div class="guide-ref">Referência em repouso: 45–65 BPM (condicionado) | 66–85 BPM (normal)</div>
+        </div>
+
+        <div class="guide-item">
+          <h3>2. Variabilidade da Frequência Cardíaca — VFC (RMSSD)</h3>
+          <p><strong>O que mede:</strong> A variação em milissegundos entre batimentos consecutivos (intervalos RR). O coração saudável não bate como um metrônomo rígido; ele acelera levemente na inspiração e desacelera na expiração.</p>
+          <p><strong>Significado na corrida:</strong> O índice <strong>RMSSD</strong> reflete a atividade do sistema nervoso parassimpático (recuperação). Valores altos mostram que você absorveu bem os treinos anteriores e está pronto para tiros ou longões. Valores muito abaixo do seu padrão pedem treino regenerativo.</p>
+          <div class="guide-ref">Referência geral: Acima de 50 ms (boa recuperação) | 25–49 ms (moderada) | Abaixo de 25 ms (fadiga/estresse)</div>
+        </div>
+
+        <div class="guide-item">
+          <h3>3. Recuperação Pós-Esforço — HRR 60s</h3>
+          <p><strong>O que mede:</strong> Quantos batimentos o coração consegue reduzir durante o primeiro minuto imediatamente após parar um tiro forte ou cruzar a linha de chegada.</p>
+          <p><strong>Significado na corrida:</strong> É um dos indicadores mais fiéis de condicionamento aeróbico e saúde autonômica. Quanto mais rápido o BPM cai no primeiro minuto, melhor está o seu condicionamento.</p>
+          <div class="guide-ref">Referência 1 min pós-esforço: Queda ≥ 25 BPM (excelente) | 15–24 BPM (bom) | Menor que 12 BPM (fadiga ou baixa adaptação)</div>
+        </div>
+
+        <div class="guide-item">
+          <h3>4. Frequência Respiratória (RPM)</h3>
+          <p><strong>O que mede:</strong> Ciclos de inspiração e expiração por minuto, extraídos da modulação lenta que a pressão torácica provoca na onda de pulso sanguíneo (Arritmia Sinusal Respiratória).</p>
+          <p><strong>Significado na corrida:</strong> Em repouso ou desaquecimento, ajuda a controlar a ansiedade pré-largada e acelerar a volta à calma. Respirar entre 8 e 14 ciclos/min reduz a tensão muscular e normaliza os batimentos.</p>
+          <div class="guide-ref">Referência em repouso: 10–18 respirações/min</div>
+        </div>
+
+        <div class="guide-item">
+          <h3>5. Índice de Perfusão Periférica (PI%)</h3>
+          <p><strong>O que mede:</strong> A proporção entre o fluxo sanguíneo pulsátil (arterial) e o tecido estático na ponta do dedo.</p>
+          <p><strong>Significado na corrida:</strong> Indica se há boa circulação periférica no momento. Mãos frias antes da largada ou desidratação reduzem o PI% (abaixo de 0,5%), o que também exige manter o dedo mais imóvel para leitura.</p>
+          <div class="guide-ref">Referência óptica: 0,5% a 5,0% (sinal capilar adequado)</div>
+        </div>
+
+        <div class="guide-item">
+          <h3>Nota sobre Pressão Arterial</h3>
+          <p>Sensores ópticos de celular medem variação de volume sanguíneo, não pressão mecânica nas artérias. Por segurança dos atletas do Pé de Chumbo, este aplicativo não exibe estimativas de pressão arterial (mmHg) — utilize sempre um aparelho de braço validado para essa finalidade.</p>
+        </div>
       </div>
-    </div>
-
-    <div id="statusBox" class="status-box">
-      Toque em "Iniciar Medição" e cubra suavemente a câmera traseira e o flash com a ponta do dedo.
-    </div>
-
-    <button id="toggleBtn">Iniciar Medição</button>
+    </section>
 
     <p class="disclaimer">
-      Uso experimental e educativo. Não substitui oxímetros ou equipamentos médicos certificados.
+      Ferramenta educativa e de acompanhamento esportivo da equipe Pé de Chumbo. Não substitui avaliação médica ou equipamentos clínicos certificados.
     </p>
   </main>
 
@@ -261,31 +865,95 @@
   <canvas id="procCanvas" width="60" height="60"></canvas>
 
   <script>
+    // Elementos da Interface
+    const navBtns = document.querySelectorAll(".nav-btn");
+    const tabPanels = document.querySelectorAll(".tab-panel");
+    const athleteInput = document.getElementById("athleteName");
+    const clearAthleteBtn = document.getElementById("clearAthleteBtn");
+    const recentAthletesEl = document.getElementById("recentAthletes");
+    const modeCards = document.querySelectorAll(".mode-card");
+    const protocolExplain = document.getElementById("protocolExplain");
+    const timerPill = document.getElementById("timerPill");
     const toggleBtn = document.getElementById("toggleBtn");
     const bpmValue = document.getElementById("bpmValue");
-    const rrValue = document.getElementById("rrValue");
-    const qualityValue = document.getElementById("qualityValue");
+    const rmssdValue = document.getElementById("rmssdValue");
+    const rpmValue = document.getElementById("rpmValue");
+    const piValue = document.getElementById("piValue");
     const statusBox = document.getElementById("statusBox");
     const torchBadge = document.getElementById("torchBadge");
     const heartWrap = document.getElementById("heartWrap");
+    const contactText = document.getElementById("contactText");
+    const contactFill = document.getElementById("contactFill");
+    const resultCard = document.getElementById("resultCard");
+    const resAthleteName = document.getElementById("resAthleteName");
+    const resModeTag = document.getElementById("resModeTag");
+    const interpretationsList = document.getElementById("interpretationsList");
+    const shareWhatsappBtn = document.getElementById("shareWhatsappBtn");
+    const repeatMeasureBtn = document.getElementById("repeatMeasureBtn");
+    const nextAthleteBtn = document.getElementById("nextAthleteBtn");
+    const historyCount = document.getElementById("historyCount");
+    const historyList = document.getElementById("historyList");
+    const exportCsvBtn = document.getElementById("exportCsvBtn");
+    const shareGroupBtn = document.getElementById("shareGroupBtn");
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+
     const video = document.getElementById("video");
     const procCanvas = document.getElementById("procCanvas");
     const procCtx = procCanvas.getContext("2d", { willReadFrequently: true });
     const waveCanvas = document.getElementById("waveCanvas");
     const waveCtx = waveCanvas.getContext("2d");
 
+    // Configuração dos Protocolos
+    const MODES = {
+      readiness: {
+        name: "Prontidão & VFC",
+        duration: 30,
+        explain: "<strong>Como funciona (Prontidão & VFC):</strong> Durante 30 segundos em repouso, o sensor mede os intervalos exatos (RR) entre batimentos e calcula o <strong>RMSSD</strong>. Esse índice revela se o sistema nervoso está recuperado para treinos intensos ou se pede rodagem leve."
+      },
+      recovery: {
+        name: "Recuperação HRR 60s",
+        duration: 60,
+        explain: "<strong>Como funciona (Recuperação Pós-Tiros):</strong> Encoste o dedo imediatamente ao parar um tiro ou prova. O app registra o <strong>BPM inicial (pico)</strong> nos primeiros segundos e mede quantos batimentos caem ao completar <strong>60 segundos</strong> — indicador direto de condicionamento aeróbico."
+      },
+      respiration: {
+        name: "Respiração RPM",
+        duration: 45,
+        explain: "<strong>Como funciona (Ritmo Respiratório):</strong> Cada inspiração e expiração altera levemente a pressão torácica e modula a amplitude da onda de pulso no dedo. Em 45 segundos, o filtro extrai seus ciclos respiratórios por minuto para auxiliar na volta à calma."
+      },
+      free: {
+        name: "Monitor Livre",
+        duration: 0,
+        explain: "<strong>Como funciona (Monitor Livre):</strong> Leitura contínua sem tempo fixo. Acompanha BPM, RMSSD, respiração e índice de perfusão em tempo real enquanto o dedo permanecer sobre a câmera."
+      }
+    };
+
+    let currentMode = "readiness";
     let isRunning = false;
     let stream = null;
     let rafId = null;
     let wakeLock = null;
+    let measureStartTime = 0;
+    let validSignalSeconds = 0;
+    let lastFrameTime = 0;
 
-    // Buffers de Processamento Digital de Sinais (DSP)
-    let rawBuffer = [];      // { t, val }
-    let detrendBuffer = [];  // { t, val }
-    let filteredBuffer = []; // { t, val }
-    let intervals = [];      // intervalos RR em ms
+    // Buffers DSP
+    let rawBuffer = [];       // { t, g, r }
+    let detrendBuffer = [];   // { t, val }
+    let filteredBuffer = [];  // { t, val }
+    let respRawBuffer = [];   // { t, val }
+    let respFiltered = [];    // { t, val }
+    let rrIntervals = [];     // ms
+    let bpmSamples = [];      // { t, bpm }
+    let piSamples = [];
+    let rpmSamples = [];
     let lastPeakTime = 0;
-    let noFingerCount = 0;
+    let lastRespPeakTime = 0;
+    let noFingerFrames = 0;
+    let lastReportText = "";
+
+    // Persistência Local (Equipe)
+    let sessionRecords = JSON.parse(localStorage.getItem("pdc_ppg_records") || "[]");
+    let savedAthletes = JSON.parse(localStorage.getItem("pdc_ppg_athletes") || "[]");
 
     function resizeWaveCanvas() {
       const rect = waveCanvas.parentElement.getBoundingClientRect();
@@ -297,8 +965,56 @@
     window.addEventListener("resize", resizeWaveCanvas);
     resizeWaveCanvas();
 
-    function setStatus(text, type = "") {
-      statusBox.textContent = text;
+    // Navegação por Abas
+    navBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        navBtns.forEach(b => b.classList.remove("active"));
+        tabPanels.forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+        if (btn.dataset.tab === "measureTab") resizeWaveCanvas();
+      });
+    });
+
+    // Atletas Recentes (Uso em Grupo)
+    function renderRecentAthletes() {
+      recentAthletesEl.innerHTML = "";
+      savedAthletes.slice(0, 8).forEach(name => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "chip" + (athleteInput.value.trim() === name ? " selected" : "");
+        chip.textContent = name;
+        chip.addEventListener("click", () => {
+          athleteInput.value = name;
+          renderRecentAthletes();
+        });
+        recentAthletesEl.appendChild(chip);
+      });
+    }
+
+    athleteInput.addEventListener("input", renderRecentAthletes);
+    clearAthleteBtn.addEventListener("click", () => {
+      athleteInput.value = "";
+      athleteInput.focus();
+      renderRecentAthletes();
+    });
+
+    // Seleção de Modo
+    modeCards.forEach(card => {
+      card.addEventListener("click", () => {
+        if (isRunning) stopMeasurement(false);
+        modeCards.forEach(c => c.classList.remove("active"));
+        card.classList.add("active");
+        currentMode = card.dataset.mode;
+        const cfg = MODES[currentMode];
+        protocolExplain.innerHTML = cfg.explain;
+        timerPill.textContent = cfg.duration > 0 ? `${cfg.duration}s` : "Livre";
+        resultCard.classList.remove("visible");
+      });
+    });
+
+    function setStatus(html, type = "") {
+      statusBox.innerHTML = html;
       statusBox.className = "status-box" + (type ? ` ${type}` : "");
     }
 
@@ -307,34 +1023,40 @@
       setTimeout(() => heartWrap.classList.remove("beat"), 140);
     }
 
-    function resetBuffers(keepBpm = false) {
+    function resetDspState(keepDisplay = false) {
       rawBuffer = [];
       detrendBuffer = [];
       filteredBuffer = [];
-      intervals = [];
+      respRawBuffer = [];
+      respFiltered = [];
+      rrIntervals = [];
+      bpmSamples = [];
+      piSamples = [];
+      rpmSamples = [];
       lastPeakTime = 0;
-      if (!keepBpm) {
-        bpmValue.textContent = "--";
-        rrValue.textContent = "-- ms";
-      }
-      clearWave();
-    }
+      lastRespPeakTime = 0;
+      validSignalSeconds = 0;
 
-    function clearWave() {
-      const w = waveCanvas.clientWidth;
-      const h = waveCanvas.clientHeight;
-      waveCtx.clearRect(0, 0, w, h);
+      if (!keepDisplay) {
+        bpmValue.textContent = "--";
+        rmssdValue.textContent = "-- ms";
+        rpmValue.textContent = "-- rpm";
+        piValue.textContent = "-- %";
+      }
+      waveCtx.clearRect(0, 0, waveCanvas.clientWidth, waveCanvas.clientHeight);
     }
 
     async function startMeasurement() {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setStatus("Navegador sem suporte à API de câmera ou página fora de HTTPS.", "warn");
+        setStatus("Navegador sem suporte à câmera ou página fora de HTTPS.", "warn");
         return;
       }
 
+      resultCard.classList.remove("visible");
+
       try {
         toggleBtn.disabled = true;
-        setStatus("Acessando câmera traseira...");
+        setStatus("Ativando câmera traseira e lanterna...");
 
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -353,168 +1075,224 @@
         const capabilities = track.getCapabilities ? track.getCapabilities() : {};
 
         if (capabilities.torch) {
-          // Pequeno atraso melhora a ativação do flash em alguns modelos Android
           setTimeout(async () => {
             try {
               await track.applyConstraints({ advanced: [{ torch: true }] });
               torchBadge.textContent = "Flash: ativo";
               torchBadge.classList.add("active");
-            } catch (e) {
+            } catch (_) {
               torchBadge.textContent = "Flash: indisponível";
             }
           }, 250);
         } else {
-          torchBadge.textContent = "Flash: sem suporte";
-          setStatus("Flash não controlável neste navegador. Ilumine o dedo com uma luz externa.", "warn");
+          torchBadge.textContent = "Flash: externo";
+          setStatus("Este navegador (ex.: iPhone Safari) não liga o flash automaticamente. Ilumine o dedo com uma luz externa.", "warn");
         }
 
         if ("wakeLock" in navigator) {
-          try {
-            wakeLock = await navigator.wakeLock.request("screen");
-          } catch (_) {}
+          try { wakeLock = await navigator.wakeLock.request("screen"); } catch (_) {}
         }
 
-        resetBuffers();
+        resetDspState();
         isRunning = true;
-        toggleBtn.textContent = "Parar Medição";
+        lastFrameTime = performance.now();
+        measureStartTime = 0;
+        toggleBtn.textContent = "Encerrar Medição";
         toggleBtn.classList.add("stop");
         toggleBtn.disabled = false;
 
         rafId = requestAnimationFrame(processFrame);
       } catch (err) {
         toggleBtn.disabled = false;
-        setStatus("Erro ao acessar câmera. Verifique as permissões e se o site está em HTTPS.", "warn");
+        setStatus("Permissão de câmera negada ou página fora de HTTPS.", "warn");
       }
     }
 
-    function stopMeasurement() {
+    function stopMeasurement(completed = false) {
       isRunning = false;
       if (rafId) cancelAnimationFrame(rafId);
 
       if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach(t => t.stop());
         stream = null;
       }
-
       if (wakeLock) {
         wakeLock.release().catch(() => {});
         wakeLock = null;
       }
 
-      torchBadge.textContent = "Flash: desligado";
+      torchBadge.textContent = "Flash: off";
       torchBadge.classList.remove("active");
-      qualityValue.textContent = "Parado";
       toggleBtn.textContent = "Iniciar Medição";
       toggleBtn.classList.remove("stop");
-      setStatus("Medição encerrada. Toque em iniciar para medir novamente.");
+      contactFill.style.width = "0%";
+      contactText.textContent = "Finalizado";
+
+      const cfg = MODES[currentMode];
+      timerPill.textContent = cfg.duration > 0 ? `${cfg.duration}s` : "Livre";
+
+      if (completed || bpmSamples.length >= 4) {
+        finalizeAndInterpret();
+      } else {
+        setStatus("Medição interrompida antes de estabilizar o pulso. Tente novamente mantendo o dedo imóvel.");
+      }
     }
 
     toggleBtn.addEventListener("click", () => {
-      if (isRunning) stopMeasurement();
+      if (isRunning) stopMeasurement(false);
       else startMeasurement();
     });
 
     function processFrame(now) {
       if (!isRunning) return;
 
+      const dtFrame = Math.min(0.1, (now - lastFrameTime) / 1000);
+      lastFrameTime = now;
+
       if (video.readyState >= 2) {
-        // Recorta o centro 60x60 do frame do vídeo
         const vw = video.videoWidth || 160;
         const vh = video.videoHeight || 120;
         const sx = Math.max(0, (vw - 60) / 2);
         const sy = Math.max(0, (vh - 60) / 2);
 
         procCtx.drawImage(video, sx, sy, 60, 60, 0, 0, 60, 60);
-        const frame = procCtx.getImageData(0, 0, 60, 60).data;
+        const data = procCtx.getImageData(0, 0, 60, 60).data;
 
         let sumR = 0, sumG = 0, sumB = 0;
-        const pixelCount = frame.length / 4;
+        const pxCount = data.length / 4;
 
-        for (let i = 0; i < frame.length; i += 4) {
-          sumR += frame[i];
-          sumG += frame[i + 1];
-          sumB += frame[i + 2];
+        for (let i = 0; i < data.length; i += 4) {
+          sumR += data[i];
+          sumG += data[i + 1];
+          sumB += data[i + 2];
         }
 
-        const avgR = sumR / pixelCount;
-        const avgG = sumG / pixelCount;
-        const avgB = sumB / pixelCount;
+        const avgR = sumR / pxCount;
+        const avgG = sumG / pxCount;
+        const avgB = sumB / pxCount;
 
-        // Verifica se a ponta do dedo está cobrindo a lente iluminada (predominância vermelha)
-        const fingerDetected = avgR > 120 && avgR > avgG * 1.25 && avgR > avgB * 1.25;
+        // Qualidade do posicionamento sobre a lente + flash
+        const redRatio = avgR / Math.max(1, (avgG + avgB) / 2);
+        const fingerDetected = avgR > 115 && redRatio > 1.25;
 
         if (!fingerDetected) {
-          noFingerCount++;
-          if (noFingerCount > 12) {
-            resetBuffers(true);
-            qualityValue.textContent = "Sem dedo";
-            setStatus("Posicione a ponta do dedo cobrindo totalmente a lente e o flash.", "warn");
+          noFingerFrames++;
+          const pct = Math.min(40, Math.round((avgR / 255) * 40));
+          contactFill.style.width = `${pct}%`;
+          contactFill.style.background = "var(--gold)";
+          contactText.textContent = "Cubra lente + flash";
+
+          if (noFingerFrames > 14) {
+            setStatus("Posicione a ponta do dedo cobrindo totalmente a lente da câmera e o flash LED.", "warn");
           }
         } else {
-          noFingerCount = 0;
+          noFingerFrames = 0;
+          validSignalSeconds += dtFrame;
 
-          // Usamos o canal Verde invertido (-avgG): o verde não satura sob o flash
-          // e a inversão faz os picos sistólicos apontarem para cima no gráfico.
+          // Cronômetro do protocolo ativo
+          const targetDuration = MODES[currentMode].duration;
+          if (targetDuration > 0) {
+            const remaining = Math.max(0, Math.ceil(targetDuration - validSignalSeconds));
+            timerPill.textContent = `${remaining}s`;
+            if (validSignalSeconds >= targetDuration) {
+              stopMeasurement(true);
+              return;
+            }
+          } else {
+            timerPill.textContent = `${Math.floor(validSignalSeconds)}s`;
+          }
+
+          // Sinal PPG pelo canal Verde invertido (-avgG)
           const signal = -avgG;
-          rawBuffer.push({ t: now, val: signal });
-          while (rawBuffer.length && now - rawBuffer[0].t > 6000) rawBuffer.shift();
+          rawBuffer.push({ t: now, g: signal, r: avgR });
+          while (rawBuffer.length && now - rawBuffer[0].t > 8000) rawBuffer.shift();
 
-          // 1. Filtro Passa-Alta (remove variação lenta da respiração e pressão do dedo - janela 750ms)
-          const hpWindow = rawBuffer.filter(p => now - p.t <= 750);
-          const localMean = hpWindow.reduce((acc, p) => acc + p.val, 0) / hpWindow.length;
-          const detrended = signal - localMean;
+          // 1. Linha de base lenta (750ms) -> separa onda cardíaca (AC) da respiratória (DC)
+          const hpWin = rawBuffer.filter(p => now - p.t <= 750);
+          const baseline = hpWin.reduce((acc, p) => acc + p.g, 0) / hpWin.length;
+          const detrended = signal - baseline;
 
           detrendBuffer.push({ t: now, val: detrended });
           while (detrendBuffer.length && now - detrendBuffer[0].t > 6000) detrendBuffer.shift();
 
-          // 2. Filtro Passa-Baixa (suaviza ruído de alta frequência - janela 120ms)
-          const lpWindow = detrendBuffer.filter(p => now - p.t <= 120);
-          const smoothed = lpWindow.reduce((acc, p) => acc + p.val, 0) / lpWindow.length;
+          // 2. Suavização Passa-Baixa Cardíaca (120ms)
+          const lpWin = detrendBuffer.filter(p => now - p.t <= 120);
+          const smoothed = lpWin.reduce((acc, p) => acc + p.val, 0) / lpWin.length;
 
           filteredBuffer.push({ t: now, val: smoothed });
           while (filteredBuffer.length && now - filteredBuffer[0].t > 4500) filteredBuffer.shift();
 
-          analyzePulse(now);
+          // 3. Extração da Onda Respiratória (modulação lenta da linha de base: 0.14 - 0.45 Hz)
+          respRawBuffer.push({ t: now, val: baseline });
+          while (respRawBuffer.length && now - respRawBuffer[0].t > 12000) respRawBuffer.shift();
+
+          if (respRawBuffer.length > 20) {
+            const respBaseWin = respRawBuffer.filter(p => now - p.t <= 5500);
+            const respMean = respBaseWin.reduce((a, b) => a + b.val, 0) / respBaseWin.length;
+            const respDetrended = baseline - respMean;
+
+            const respSmoothWin = respRawBuffer.filter(p => now - p.t <= 1100);
+            const respSmoothMean = respSmoothWin.reduce((a, b) => a + b.val, 0) / respSmoothWin.length;
+
+            respFiltered.push({ t: now, val: respSmoothMean - respMean });
+            while (respFiltered.length && now - respFiltered[0].t > 10000) respFiltered.shift();
+          }
+
+          analyzeSignals(now);
         }
       }
 
       rafId = requestAnimationFrame(processFrame);
     }
 
-    function analyzePulse(now) {
+    function analyzeSignals(now) {
       const n = filteredBuffer.length;
       if (n < 15) return;
 
-      // Calcula desvio padrão nos últimos 3 segundos para limiar adaptativo e escala visual
       const recent = filteredBuffer.filter(p => now - p.t <= 3000);
       const mean = recent.reduce((a, b) => a + b.val, 0) / recent.length;
       const variance = recent.reduce((a, b) => a + Math.pow(b.val - mean, 2), 0) / recent.length;
       const stdDev = Math.sqrt(variance);
 
-      // Se stdDev for muito alto (> 25), houve movimento brusco do dedo
-      const stableSignal = stdDev > 0.12 && stdDev < 25;
+      // Cálculo do Índice de Perfusão (PI%) = (AC pico-a-pico / DC médio) * 100
+      const vals = recent.map(p => p.val);
+      const acPP = Math.max(...vals) - Math.min(...vals);
+      const recentRaw = rawBuffer.filter(p => now - p.t <= 3000);
+      const dcMean = Math.abs(recentRaw.reduce((a, b) => a + b.g, 0) / recentRaw.length) || 100;
+      const pi = Math.min(12, Math.max(0.1, (acPP / dcMean) * 100));
 
-      if (!stableSignal) {
-        qualityValue.textContent = "Instável";
-        setStatus("Mantenha o dedo parado e sem pressionar com força excessiva.", "warn");
+      const stable = stdDev > 0.12 && stdDev < 24;
+
+      if (!stable) {
+        contactFill.style.width = "55%";
+        contactFill.style.background = "var(--gold)";
+        contactText.textContent = "Sinal instável (não aperte)";
+        setStatus("Mantenha o dedo parado e encostado sem apertar com força.", "warn");
         drawWave(now, Math.max(1.5, stdDev * 3));
         return;
       }
 
-      qualityValue.textContent = "Bom";
-      if (intervals.length < 3) {
-        setStatus("Lendo pulso... aguarde alguns segundos para estabilizar.", "ok");
+      contactFill.style.width = "100%";
+      contactFill.style.background = "var(--green)";
+      contactText.textContent = "Sinal óptico excelente";
+
+      piSamples.push(pi);
+      if (piSamples.length > 30) piSamples.shift();
+      const avgPi = piSamples.reduce((a, b) => a + b, 0) / piSamples.length;
+      piValue.textContent = `${avgPi.toFixed(1)} %`;
+
+      if (rrIntervals.length < 3) {
+        setStatus("Captando pulso... aguarde estabilizar os primeiros batimentos.", "ok");
       } else {
-        setStatus("Medição estável. Mantenha o dedo imóvel.", "ok");
+        setStatus("Leitura estável em andamento. Mantenha o dedo imóvel.", "ok");
       }
 
-      // 3. Detecção de Picos na penúltima amostra (n - 2)
+      // Detecção de Picos Cardíacos (n - 2)
       const prev = filteredBuffer[n - 3].val;
       const curr = filteredBuffer[n - 2].val;
       const next = filteredBuffer[n - 1].val;
       const peakTime = filteredBuffer[n - 2].t;
-
-      const threshold = Math.max(0.15, stdDev * 0.5);
+      const threshold = Math.max(0.15, stdDev * 0.52);
 
       if (curr > prev && curr >= next && curr > threshold) {
         const dt = peakTime - lastPeakTime;
@@ -523,25 +1301,61 @@
           lastPeakTime = peakTime;
           triggerHeartBeat();
         } else if (dt >= 300 && dt <= 1500) {
-          // Intervalo fisiológico válido (40 a 200 BPM)
           lastPeakTime = peakTime;
-          intervals.push(dt);
-          if (intervals.length > 8) intervals.shift();
+          rrIntervals.push(dt);
+          if (rrIntervals.length > 24) rrIntervals.shift();
 
           triggerHeartBeat();
 
-          if (intervals.length >= 3) {
-            // Mediana dos últimos intervalos elimina batimentos perdidos ou ruídos isolados
-            const sorted = [...intervals].sort((a, b) => a - b);
+          if (rrIntervals.length >= 3) {
+            const recentRR = rrIntervals.slice(-8);
+            const sorted = [...recentRR].sort((a, b) => a - b);
             const medianDt = sorted[Math.floor(sorted.length / 2)];
             const bpm = Math.round(60000 / medianDt);
 
             bpmValue.textContent = bpm;
-            rrValue.textContent = `${Math.round(medianDt)} ms`;
+            bpmSamples.push({ t: validSignalSeconds, bpm });
+
+            // Cálculo de VFC (RMSSD) filtrando artefatos (>30% de desvio da mediana)
+            const cleanRR = rrIntervals.filter(rr => Math.abs(rr - medianDt) / medianDt <= 0.30);
+            if (cleanRR.length >= 4) {
+              let sumSqDiff = 0;
+              for (let i = 1; i < cleanRR.length; i++) {
+                const diff = cleanRR[i] - cleanRR[i - 1];
+                sumSqDiff += diff * diff;
+              }
+              const rmssd = Math.round(Math.sqrt(sumSqDiff / (cleanRR.length - 1)));
+              rmssdValue.textContent = `${rmssd} ms`;
+            }
           }
         } else if (dt > 1500) {
-          // Reinicia referência caso o dedo tenha perdido contato momentâneo
           lastPeakTime = peakTime;
+        }
+      }
+
+      // Detecção de Ciclos Respiratórios (RPM)
+      const rn = respFiltered.length;
+      if (rn >= 10) {
+        const rPrev = respFiltered[rn - 3].val;
+        const rCurr = respFiltered[rn - 2].val;
+        const rNext = respFiltered[rn - 1].val;
+        const rTime = respFiltered[rn - 2].t;
+
+        if (rCurr > rPrev && rCurr >= rNext && rCurr > 0.04) {
+          const rDt = rTime - lastRespPeakTime;
+          if (lastRespPeakTime === 0) {
+            lastRespPeakTime = rTime;
+          } else if (rDt >= 2200 && rDt <= 8500) {
+            // 7 a 27 respirações por minuto
+            lastRespPeakTime = rTime;
+            const rpm = Math.round(60000 / rDt);
+            rpmSamples.push(rpm);
+            if (rpmSamples.length > 6) rpmSamples.shift();
+            const avgRpm = Math.round(rpmSamples.reduce((a, b) => a + b, 0) / rpmSamples.length);
+            rpmValue.textContent = `${avgRpm} rpm`;
+          } else if (rDt > 8500) {
+            lastRespPeakTime = rTime;
+          }
         }
       }
 
@@ -556,7 +1370,6 @@
 
       waveCtx.clearRect(0, 0, w, h);
 
-      // Linha de base central
       waveCtx.strokeStyle = "rgba(148, 163, 184, 0.12)";
       waveCtx.lineWidth = 1;
       waveCtx.beginPath();
@@ -566,7 +1379,6 @@
 
       if (filteredBuffer.length < 2) return;
 
-      // Curva PPG
       waveCtx.strokeStyle = "#ef4444";
       waveCtx.lineWidth = 2.2;
       waveCtx.lineJoin = "round";
@@ -591,6 +1403,243 @@
       }
       waveCtx.stroke();
     }
+
+    // Interpretação Fisiológica e Salvar Registro do Grupo
+    function finalizeAndInterpret() {
+      const athlete = athleteInput.value.trim() || "Atleta Pé de Chumbo";
+      if (athleteInput.value.trim() && !savedAthletes.includes(athlete)) {
+        savedAthletes.unshift(athlete);
+        savedAthletes = savedAthletes.slice(0, 15);
+        localStorage.setItem("pdc_ppg_athletes", JSON.stringify(savedAthletes));
+        renderRecentAthletes();
+      }
+
+      const bpms = bpmSamples.map(s => s.bpm);
+      const avgBpm = bpms.length ? Math.round(bpms.reduce((a, b) => a + b, 0) / bpms.length) : 0;
+      const startBpm = bpms.length >= 2 ? bpms[0] : avgBpm;
+      const endBpm = bpms.length >= 2 ? bpms[bpms.length - 1] : avgBpm;
+      const hrrDrop = Math.max(0, startBpm - endBpm);
+
+      const rmssdParsed = parseInt(rmssdValue.textContent, 10) || null;
+      const rpmParsed = parseInt(rpmValue.textContent, 10) || null;
+      const piParsed = parseFloat(piValue.textContent) || null;
+
+      // Gera explicações personalizadas para cada métrica medida
+      const items = [];
+
+      // 1. BPM ou HRR 60s
+      if (currentMode === "recovery" && bpms.length >= 4) {
+        let badge = { text: "Boa adaptação", cls: "badge-good" };
+        let meaning = `Seu pulso saiu de <strong>${startBpm} BPM</strong> para <strong>${endBpm} BPM</strong> (queda de <strong>${hrrDrop} BPM</strong>). `;
+        if (hrrDrop >= 25) {
+          badge = { text: "Excelente recuperação", cls: "badge-good" };
+          meaning += "Queda igual ou maior que 25 BPM em 1 minuto indica ótimo condicionamento aeróbico e rápida ativação vagal pós-esforço.";
+        } else if (hrrDrop >= 15) {
+          badge = { text: "Recuperação adequada", cls: "badge-info" };
+          meaning += "Queda dentro da faixa esperada após esforço intenso. Mantenha o desaquecimento caminhando ou trotando leve.";
+        } else {
+          badge = { text: "Recuperação lenta", cls: "badge-warn" };
+          meaning += "Queda abaixo de 15 BPM sugere esforço muito próximo do limite máximo ou fadiga acumulada. Aumente o intervalo antes do próximo tiro.";
+        }
+        items.push({ name: `Recuperação Pós-Esforço: -${hrrDrop} BPM`, badge, meaning });
+      } else {
+        let badge = { text: "Ritmo normal", cls: "badge-info" };
+        let meaning = `Média de <strong>${avgBpm} BPM</strong> durante a leitura. `;
+        if (avgBpm < 62) {
+          badge = { text: "FC baixa (condicionado)", cls: "badge-good" };
+          meaning += "Frequência característica de corredor com boa eficiência cardíaca em repouso.";
+        } else if (avgBpm <= 82) {
+          badge = { text: "Repouso normal", cls: "badge-info" };
+          meaning += "Frequência dentro da faixa normal em repouso ou pré-aquecimento.";
+        } else {
+          badge = { text: "FC elevada", cls: "badge-warn" };
+          meaning += "Frequência elevada para repouso. Se não acabou de correr, avalie hidratação, estresse ou qualidade do sono.";
+        }
+        items.push({ name: `Frequência Cardíaca: ${avgBpm} BPM`, badge, meaning });
+      }
+
+      // 2. VFC (RMSSD)
+      if (rmssdParsed !== null) {
+        let badge = { text: "Moderada", cls: "badge-info" };
+        let meaning = `Variabilidade entre batimentos de <strong>${rmssdParsed} ms</strong>. `;
+        if (rmssdParsed >= 50) {
+          badge = { text: "Alta prontidão", cls: "badge-good" };
+          meaning += "Sistema parassimpático ativo: corpo bem recuperado e pronto para suportar treinos de qualidade, ritmo ou tiros.";
+        } else if (rmssdParsed >= 28) {
+          badge = { text: "Recuperação parcial", cls: "badge-info" };
+          meaning += "Equilíbrio autonômico moderado. Bom dia para rodagem contínua ou treino técnico sem exagero de volume.";
+        } else {
+          badge = { text: "Sinal de fadiga", cls: "badge-warn" };
+          meaning += "Variabilidade reduzida indica maior carga de estresse físico ou cansaço. Priorize rodagem regenerativa, hidratação e descanso.";
+        }
+        items.push({ name: `VFC (RMSSD): ${rmssdParsed} ms`, badge, meaning });
+      }
+
+      // 3. Respiração (RPM)
+      if (rpmParsed !== null) {
+        let badge = { text: "Ritmo controlado", cls: "badge-good" };
+        let meaning = `Taxa estimada de <strong>${rpmParsed} respirações/min</strong>. `;
+        if (rpmParsed <= 16) {
+          meaning += "Respiração profunda e calma, favorecendo a oxigenação e a redução da frequência cardíaca.";
+        } else {
+          badge = { text: "Respiração acelerada", cls: "badge-warn" };
+          meaning += "Ritmo respiratório ainda elevado. Faça inspirações nasais lentas (4s) e expirações longas (6s) para acelerar a recuperação.";
+        }
+        items.push({ name: `Frequência Respiratória: ${rpmParsed} rpm`, badge, meaning });
+      }
+
+      // 4. Perfusão Periférica (PI%)
+      if (piParsed !== null) {
+        const badge = piParsed >= 0.8
+          ? { text: "Boa circulação", cls: "badge-good" }
+          : { text: "Perfusão baixa", cls: "badge-warn" };
+        const meaning = piParsed >= 0.8
+          ? `Índice de <strong>${piParsed.toFixed(1)}%</strong> confirma fluxo sanguíneo capilar forte e boa qualidade óptica do sinal.`
+          : `Índice de <strong>${piParsed.toFixed(1)}%</strong> indica fluxo capilar reduzido (mãos frias ou vasoconstrição). Aqueça as mãos antes de repetir.`;
+        items.push({ name: `Perfusão Periférica: ${piParsed.toFixed(1)}%`, badge, meaning });
+      }
+
+      // Renderiza laudo visual
+      resAthleteName.textContent = athlete;
+      resModeTag.textContent = MODES[currentMode].name;
+      interpretationsList.innerHTML = items.map(it => `
+        <div class="interp-item">
+          <div class="interp-top">
+            <span class="interp-name">${it.name}</span>
+            <span class="interp-badge ${it.badge.cls}">${it.badge.text}</span>
+          </div>
+          <div class="interp-text">${it.meaning}</div>
+        </div>
+      `).join("");
+
+      resultCard.classList.add("visible");
+      setStatus("Leitura concluída! Confira a interpretação abaixo ou avance para o próximo atleta.", "ok");
+
+      // Salva no histórico do grupo
+      const nowStr = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const dateStr = new Date().toLocaleDateString("pt-BR");
+      const record = {
+        id: Date.now(),
+        date: dateStr,
+        time: nowStr,
+        athlete,
+        mode: MODES[currentMode].name,
+        bpm: avgBpm,
+        hrrDrop: currentMode === "recovery" ? hrrDrop : null,
+        rmssd: rmssdParsed,
+        rpm: rpmParsed,
+        pi: piParsed ? piParsed.toFixed(1) : null
+      };
+
+      sessionRecords.unshift(record);
+      localStorage.setItem("pdc_ppg_records", JSON.stringify(sessionRecords));
+      renderHistory();
+
+      lastReportText = `*Pé de Chumbo • Check-up PPG*\n` +
+        `Atleta: *${athlete}*\n` +
+        `Protocolo: ${record.mode} (${dateStr} ${nowStr})\n` +
+        `• FC Média: *${avgBpm} BPM*` +
+        (record.hrrDrop !== null ? ` (Queda 1 min: *-${record.hrrDrop} BPM*)` : "") + `\n` +
+        (rmssdParsed !== null ? `• VFC (RMSSD): *${rmssdParsed} ms*\n` : "") +
+        (rpmParsed !== null ? `• Respiração: *${rpmParsed} rpm*\n` : "") +
+        (record.pi !== null ? `• Perfusão: *${record.pi}%*` : "");
+    }
+
+    // Botões pós-medição (Modo Grupo)
+    shareWhatsappBtn.addEventListener("click", async () => {
+      if (!lastReportText) return;
+      try {
+        await navigator.clipboard.writeText(lastReportText);
+        shareWhatsappBtn.textContent = "Copiado!";
+        setTimeout(() => shareWhatsappBtn.textContent = "Copiar p/ WhatsApp", 1800);
+      } catch (_) {
+        alert(lastReportText);
+      }
+    });
+
+    repeatMeasureBtn.addEventListener("click", () => {
+      resultCard.classList.remove("visible");
+      startMeasurement();
+    });
+
+    nextAthleteBtn.addEventListener("click", () => {
+      resultCard.classList.remove("visible");
+      resetDspState();
+      athleteInput.value = "";
+      renderRecentAthletes();
+      setStatus("Pronto para o próximo corredor! Digite o nome acima e toque em <strong>Iniciar Medição</strong>.");
+      athleteInput.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    // Histórico do Grupo & Exportação
+    function renderHistory() {
+      historyCount.textContent = sessionRecords.length;
+      if (!sessionRecords.length) {
+        historyList.innerHTML = `<div style="font-size:0.82rem;color:var(--muted);text-align:center;padding:20px 0;">Nenhuma medição registrada ainda nesta sessão.</div>`;
+        return;
+      }
+
+      historyList.innerHTML = sessionRecords.map(r => `
+        <div class="history-item">
+          <div class="history-top">
+            <span style="color:var(--gold);">${r.athlete}</span>
+            <span>${r.bpm} BPM</span>
+          </div>
+          <div class="history-meta">${r.mode} • ${r.date} às ${r.time}</div>
+          <div class="history-stats">
+            ${r.hrrDrop !== null ? `<span class="stat-pill">Queda 60s: -${r.hrrDrop} BPM</span>` : ""}
+            ${r.rmssd !== null ? `<span class="stat-pill">RMSSD: ${r.rmssd} ms</span>` : ""}
+            ${r.rpm !== null ? `<span class="stat-pill">Resp: ${r.rpm} rpm</span>` : ""}
+            ${r.pi !== null ? `<span class="stat-pill">PI: ${r.pi}%</span>` : ""}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    exportCsvBtn.addEventListener("click", () => {
+      if (!sessionRecords.length) return;
+      const header = "Data,Hora,Atleta,Protocolo,BPM_Medio,Queda_HRR_60s,VFC_RMSSD_ms,Respiracao_RPM,Perfusao_PI_pct\n";
+      const rows = sessionRecords.map(r =>
+        `"${r.date}","${r.time}","${r.athlete}","${r.mode}",${r.bpm},${r.hrrDrop ?? ""},${r.rmssd ?? ""},${r.rpm ?? ""},${r.pi ?? ""}`
+      ).join("\n");
+
+      const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pe-de-chumbo-avaliacao-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    shareGroupBtn.addEventListener("click", async () => {
+      if (!sessionRecords.length) return;
+      const summary = `*Resumo de Avaliação • Pé de Chumbo*\n\n` +
+        sessionRecords.map(r =>
+          `• *${r.athlete}* (${r.mode}): ${r.bpm} BPM` +
+          (r.rmssd !== null ? ` | RMSSD: ${r.rmssd} ms` : "") +
+          (r.hrrDrop !== null ? ` | Queda 1m: -${r.hrrDrop} BPM` : "")
+        ).join("\n");
+      try {
+        await navigator.clipboard.writeText(summary);
+        shareGroupBtn.textContent = "Resumo Copiado!";
+        setTimeout(() => shareGroupBtn.textContent = "Copiar Resumo Grupo", 1800);
+      } catch (_) {
+        alert(summary);
+      }
+    });
+
+    clearHistoryBtn.addEventListener("click", () => {
+      if (!sessionRecords.length) return;
+      sessionRecords = [];
+      localStorage.removeItem("pdc_ppg_records");
+      renderHistory();
+    });
+
+    // Inicialização
+    renderRecentAthletes();
+    renderHistory();
   </script>
 </body>
 </html>
