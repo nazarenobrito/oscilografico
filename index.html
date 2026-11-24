@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Monitor Cardíaco PPG</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card: #131a26;
+      --border: #222d40;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #ef4444;
+      --accent-glow: rgba(239, 68, 68, 0.35);
+      --ok: #10b981;
+      --warn: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.12);
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .badge.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--ok);
+    }
+
+    .bpm-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 0;
+      position: relative;
+    }
+
+    .heart-wrap {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.12s ease;
+    }
+
+    .heart-wrap.beat {
+      transform: scale(1.22);
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .heart-icon {
+      width: 28px;
+      height: 28px;
+      fill: var(--accent);
+    }
+
+    .bpm-value {
+      font-size: 4.2rem;
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -2px;
+    }
+
+    .bpm-unit {
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 6px;
+    }
+
+    .wave-container {
+      width: 100%;
+      height: 120px;
+      background: #090d14;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 16px 0;
+      position: relative;
+    }
+
+    #waveCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .metric-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .metric-val {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-box {
+      font-size: 0.85rem;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      line-height: 1.4;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .status-box.ok { color: var(--ok); background: rgba(16, 185, 129, 0.08); }
+    .status-box.warn { color: var(--warn); background: rgba(245, 158, 11, 0.08); }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.98); }
+    button.stop { background: #334155; }
+
+    .disclaimer {
+      margin-top: 14px;
+      font-size: 0.72rem;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    /* Elementos ocultos de captura */
+    video, #procCanvas { display: none; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Monitor PPG</h1>
+      <span id="torchBadge" class="badge">Flash: desligado</span>
+    </header>
+
+    <section class="bpm-panel">
+      <div id="heartWrap" class="heart-wrap">
+        <svg class="heart-icon" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <div id="bpmValue" class="bpm-value">--</div>
+      <div class="bpm-unit">BPM</div>
+    </section>
+
+    <div class="wave-container">
+      <canvas id="waveCanvas"></canvas>
+    </div>
+
+    <div class="metrics">
+      <div class="metric-box">
+        <div class="metric-label">Intervalo RR</div>
+        <div id="rrValue" class="metric-val">-- ms</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Sinal Óptico</div>
+        <div id="qualityValue" class="metric-val">Aguardando</div>
+      </div>
+    </div>
+
+    <div id="statusBox" class="status-box">
+      Toque em "Iniciar Medição" e cubra suavemente a câmera traseira e o flash com a ponta do dedo.
+    </div>
+
+    <button id="toggleBtn">Iniciar Medição</button>
+
+    <p class="disclaimer">
+      Uso experimental e educativo. Não substitui oxímetros ou equipamentos médicos certificados.
+    </p>
+  </main>
+
+  <video id="video" playsinline muted></video>
+  <canvas id="procCanvas" width="60" height="60"></canvas>
+
+  <script>
+    const toggleBtn = document.getElementById("toggleBtn");
+    const bpmValue = document.getElementById("bpmValue");
+    const rrValue = document.getElementById("rrValue");
+    const qualityValue = document.getElementById("qualityValue");
+    const statusBox = document.getElementById("statusBox");
+    const torchBadge = document.getElementById("torchBadge");
+    const heartWrap = document.getElementById("heartWrap");
+    const video = document.getElementById("video");
+    const procCanvas = document.getElementById("procCanvas");
+    const procCtx = procCanvas.getContext("2d", { willReadFrequently: true });
+    const waveCanvas = document.getElementById("waveCanvas");
+    const waveCtx = waveCanvas.getContext("2d");
+
+    let isRunning = false;
+    let stream = null;
+    let rafId = null;
+    let wakeLock = null;
+
+    // Buffers de Processamento Digital de Sinais (DSP)
+    let rawBuffer = [];      // { t, val }
+    let detrendBuffer = [];  // { t, val }
+    let filteredBuffer = []; // { t, val }
+    let intervals = [];      // intervalos RR em ms
+    let lastPeakTime = 0;
+    let noFingerCount = 0;
+
+    function resizeWaveCanvas() {
+      const rect = waveCanvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      waveCanvas.width = rect.width * dpr;
+      waveCanvas.height = rect.height * dpr;
+      waveCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener("resize", resizeWaveCanvas);
+    resizeWaveCanvas();
+
+    function setStatus(text, type = "") {
+      statusBox.textContent = text;
+      statusBox.className = "status-box" + (type ? ` ${type}` : "");
+    }
+
+    function triggerHeartBeat() {
+      heartWrap.classList.add("beat");
+      setTimeout(() => heartWrap.classList.remove("beat"), 140);
+    }
+
+    function resetBuffers(keepBpm = false) {
+      rawBuffer = [];
+      detrendBuffer = [];
+      filteredBuffer = [];
+      intervals = [];
+      lastPeakTime = 0;
+      if (!keepBpm) {
+        bpmValue.textContent = "--";
+        rrValue.textContent = "-- ms";
+      }
+      clearWave();
+    }
+
+    function clearWave() {
+      const w = waveCanvas.clientWidth;
+      const h = waveCanvas.clientHeight;
+      waveCtx.clearRect(0, 0, w, h);
+    }
+
+    async function startMeasurement() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setStatus("Navegador sem suporte à API de câmera ou página fora de HTTPS.", "warn");
+        return;
+      }
+
+      try {
+        toggleBtn.disabled = true;
+        setStatus("Acessando câmera traseira...");
+
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 160 },
+            height: { ideal: 120 },
+            frameRate: { ideal: 30, max: 60 }
+          },
+          audio: false
+        });
+
+        video.srcObject = stream;
+        await video.play();
+
+        const track = stream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+
+        if (capabilities.torch) {
+          // Pequeno atraso melhora a ativação do flash em alguns modelos Android
+          setTimeout(async () => {
+            try {
+              await track.applyConstraints({ advanced: [{ torch: true }] });
+              torchBadge.textContent = "Flash: ativo";
+              torchBadge.classList.add("active");
+            } catch (e) {
+              torchBadge.textContent = "Flash: indisponível";
+            }
+          }, 250);
+        } else {
+          torchBadge.textContent = "Flash: sem suporte";
+          setStatus("Flash não controlável neste navegador. Ilumine o dedo com uma luz externa.", "warn");
+        }
+
+        if ("wakeLock" in navigator) {
+          try {
+            wakeLock = await navigator.wakeLock.request("screen");
+          } catch (_) {}
+        }
+
+        resetBuffers();
+        isRunning = true;
+        toggleBtn.textContent = "Parar Medição";
+        toggleBtn.classList.add("stop");
+        toggleBtn.disabled = false;
+
+        rafId = requestAnimationFrame(processFrame);
+      } catch (err) {
+        toggleBtn.disabled = false;
+        setStatus("Erro ao acessar câmera. Verifique as permissões e se o site está em HTTPS.", "warn");
+      }
+    }
+
+    function stopMeasurement() {
+      isRunning = false;
+      if (rafId) cancelAnimationFrame(rafId);
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+
+      if (wakeLock) {
+        wakeLock.release().catch(() => {});
+        wakeLock = null;
+      }
+
+      torchBadge.textContent = "Flash: desligado";
+      torchBadge.classList.remove("active");
+      qualityValue.textContent = "Parado";
+      toggleBtn.textContent = "Iniciar Medição";
+      toggleBtn.classList.remove("stop");
+      setStatus("Medição encerrada. Toque em iniciar para medir novamente.");
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      if (isRunning) stopMeasurement();
+      else startMeasurement();
+    });
+
+    function processFrame(now) {
+      if (!isRunning) return;
+
+      if (video.readyState >= 2) {
+        // Recorta o centro 60x60 do frame do vídeo
+        const vw = video.videoWidth || 160;
+        const vh = video.videoHeight || 120;
+        const sx = Math.max(0, (vw - 60) / 2);
+        const sy = Math.max(0, (vh - 60) / 2);
+
+        procCtx.drawImage(video, sx, sy, 60, 60, 0, 0, 60, 60);
+        const frame = procCtx.getImageData(0, 0, 60, 60).data;
+
+        let sumR = 0, sumG = 0, sumB = 0;
+        const pixelCount = frame.length / 4;
+
+        for (let i = 0; i < frame.length; i += 4) {
+          sumR += frame[i];
+          sumG += frame[i + 1];
+          sumB += frame[i + 2];
+        }
+
+        const avgR = sumR / pixelCount;
+        const avgG = sumG / pixelCount;
+        const avgB = sumB / pixelCount;
+
+        // Verifica se a ponta do dedo está cobrindo a lente iluminada (predominância vermelha)
+        const fingerDetected = avgR > 120 && avgR > avgG * 1.25 && avgR > avgB * 1.25;
+
+        if (!fingerDetected) {
+          noFingerCount++;
+          if (noFingerCount > 12) {
+            resetBuffers(true);
+            qualityValue.textContent = "Sem dedo";
+            setStatus("Posicione a ponta do dedo cobrindo totalmente a lente e o flash.", "warn");
+          }
+        } else {
+          noFingerCount = 0;
+
+          // Usamos o canal Verde invertido (-avgG): o verde não satura sob o flash
+          // e a inversão faz os picos sistólicos apontarem para cima no gráfico.
+          const signal = -avgG;
+          rawBuffer.push({ t: now, val: signal });
+          while (rawBuffer.length && now - rawBuffer[0].t > 6000) rawBuffer.shift();
+
+          // 1. Filtro Passa-Alta (remove variação lenta da respiração e pressão do dedo - janela 750ms)
+          const hpWindow = rawBuffer.filter(p => now - p.t <= 750);
+          const localMean = hpWindow.reduce((acc, p) => acc + p.val, 0) / hpWindow.length;
+          const detrended = signal - localMean;
+
+          detrendBuffer.push({ t: now, val: detrended });
+          while (detrendBuffer.length && now - detrendBuffer[0].t > 6000) detrendBuffer.shift();
+
+          // 2. Filtro Passa-Baixa (suaviza ruído de alta frequência - janela 120ms)
+          const lpWindow = detrendBuffer.filter(p => now - p.t <= 120);
+          const smoothed = lpWindow.reduce((acc, p) => acc + p.val, 0) / lpWindow.length;
+
+          filteredBuffer.push({ t: now, val: smoothed });
+          while (filteredBuffer.length && now - filteredBuffer[0].t > 4500) filteredBuffer.shift();
+
+          analyzePulse(now);
+        }
+      }
+
+      rafId = requestAnimationFrame(processFrame);
+    }
+
+    function analyzePulse(now) {
+      const n = filteredBuffer.length;
+      if (n < 15) return;
+
+      // Calcula desvio padrão nos últimos 3 segundos para limiar adaptativo e escala visual
+      const recent = filteredBuffer.filter(p => now - p.t <= 3000);
+      const mean = recent.reduce((a, b) => a + b.val, 0) / recent.length;
+      const variance = recent.reduce((a, b) => a + Math.pow(b.val - mean, 2), 0) / recent.length;
+      const stdDev = Math.sqrt(variance);
+
+      // Se stdDev for muito alto (> 25), houve movimento brusco do dedo
+      const stableSignal = stdDev > 0.12 && stdDev < 25;
+
+      if (!stableSignal) {
+        qualityValue.textContent = "Instável";
+        setStatus("Mantenha o dedo parado e sem pressionar com força excessiva.", "warn");
+        drawWave(now, Math.max(1.5, stdDev * 3));
+        return;
+      }
+
+      qualityValue.textContent = "Bom";
+      if (intervals.length < 3) {
+        setStatus("Lendo pulso... aguarde alguns segundos para estabilizar.", "ok");
+      } else {
+        setStatus("Medição estável. Mantenha o dedo imóvel.", "ok");
+      }
+
+      // 3. Detecção de Picos na penúltima amostra (n - 2)
+      const prev = filteredBuffer[n - 3].val;
+      const curr = filteredBuffer[n - 2].val;
+      const next = filteredBuffer[n - 1].val;
+      const peakTime = filteredBuffer[n - 2].t;
+
+      const threshold = Math.max(0.15, stdDev * 0.5);
+
+      if (curr > prev && curr >= next && curr > threshold) {
+        const dt = peakTime - lastPeakTime;
+
+        if (lastPeakTime === 0) {
+          lastPeakTime = peakTime;
+          triggerHeartBeat();
+        } else if (dt >= 300 && dt <= 1500) {
+          // Intervalo fisiológico válido (40 a 200 BPM)
+          lastPeakTime = peakTime;
+          intervals.push(dt);
+          if (intervals.length > 8) intervals.shift();
+
+          triggerHeartBeat();
+
+          if (intervals.length >= 3) {
+            // Mediana dos últimos intervalos elimina batimentos perdidos ou ruídos isolados
+            const sorted = [...intervals].sort((a, b) => a - b);
+            const medianDt = sorted[Math.floor(sorted.length / 2)];
+            const bpm = Math.round(60000 / medianDt);
+
+            bpmValue.textContent = bpm;
+            rrValue.textContent = `${Math.round(medianDt)} ms`;
+          }
+        } else if (dt > 1500) {
+          // Reinicia referência caso o dedo tenha perdido contato momentâneo
+          lastPeakTime = peakTime;
+        }
+      }
+
+      drawWave(now, Math.max(1.2, stdDev * 3.2));
+    }
+
+    function drawWave(now, scaleY) {
+      const w = waveCanvas.clientWidth;
+      const h = waveCanvas.clientHeight;
+      const midY = h / 2;
+      const windowMs = 4000;
+
+      waveCtx.clearRect(0, 0, w, h);
+
+      // Linha de base central
+      waveCtx.strokeStyle = "rgba(148, 163, 184, 0.12)";
+      waveCtx.lineWidth = 1;
+      waveCtx.beginPath();
+      waveCtx.moveTo(0, midY);
+      waveCtx.lineTo(w, midY);
+      waveCtx.stroke();
+
+      if (filteredBuffer.length < 2) return;
+
+      // Curva PPG
+      waveCtx.strokeStyle = "#ef4444";
+      waveCtx.lineWidth = 2.2;
+      waveCtx.lineJoin = "round";
+      waveCtx.beginPath();
+
+      let started = false;
+      for (let i = 0; i < filteredBuffer.length; i++) {
+        const p = filteredBuffer[i];
+        const age = now - p.t;
+        if (age > windowMs) continue;
+
+        const x = w - (age / windowMs) * w;
+        const normY = Math.max(-1, Math.min(1, p.val / scaleY));
+        const y = midY - normY * (h * 0.42);
+
+        if (!started) {
+          waveCtx.moveTo(x, y);
+          started = true;
+        } else {
+          waveCtx.lineTo(x, y);
+        }
+      }
+      waveCtx.stroke();
+    }
+  </script>
+</body>
+</html>
